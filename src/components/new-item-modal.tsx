@@ -1,13 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import BaseModal from "./base-modal";
 import Button from "./button";
-import { PasswordItem } from "../mock-data";
+import { PasswordItem } from "../schema";
 
 interface NewItemModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (item: Partial<PasswordItem>) => void;
+  onSave: (item: PasswordItem) => void;
   folders: string[];
+  editingItem: PasswordItem | null;
 }
 
 const NewItemModal: React.FC<NewItemModalProps> = ({
@@ -15,14 +16,31 @@ const NewItemModal: React.FC<NewItemModalProps> = ({
   onClose,
   onSave,
   folders,
+  editingItem,
 }) => {
-  const [item, setItem] = useState<Partial<PasswordItem>>({
+  const [item, setItem] = useState<PasswordItem>({
     name: "",
     username: "",
     password: "",
     uri: "",
     folder: folders[0] || "",
+    deleted: false,
   });
+
+  useEffect(() => {
+    if (editingItem) {
+      setItem(editingItem);
+    } else {
+      setItem({
+        name: "",
+        username: "",
+        password: "",
+        uri: "",
+        folder: folders[0] || "",
+        deleted: false,
+      });
+    }
+  }, [editingItem, folders]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -38,7 +56,11 @@ const NewItemModal: React.FC<NewItemModalProps> = ({
   };
 
   return (
-    <BaseModal isOpen={isOpen} onClose={onClose} title="Add New Password">
+    <BaseModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={editingItem ? "Edit Password" : "Add New Password"}
+    >
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label
@@ -132,7 +154,7 @@ const NewItemModal: React.FC<NewItemModalProps> = ({
           <Button type="button" variant="secondary" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit">Save</Button>
+          <Button type="submit">{editingItem ? "Update" : "Save"}</Button>
         </div>
       </form>
     </BaseModal>

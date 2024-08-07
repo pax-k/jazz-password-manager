@@ -78,3 +78,25 @@ export const shareFolder = (
     }, 500);
   });
 };
+
+export const shareItem = (
+  item: PasswordItem,
+  permission: string
+): Promise<string> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      // In a real app, this would generate a unique invite link
+      const inviteLink = `https://example.com/invite?item=${item.name}&permission=${permission}`;
+      resolve(inviteLink);
+    }, 500);
+  });
+};
+
+export const getSharedUsers = (folderName: string): Promise<string[]> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      // In a real app, this would fetch the actual shared users
+      resolve(["user1@example.com", "user2@example.com"]);
+    }, 500);
+  });
+};

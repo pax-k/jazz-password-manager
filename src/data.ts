@@ -11,6 +11,7 @@ export const mockData: PasswordManagerRootAccount = {
           password: "password123",
           uri: "https://gmail.com",
           folder: "Personal",
+          deleted: false,
         },
         {
           name: "Facebook",
@@ -18,6 +19,7 @@ export const mockData: PasswordManagerRootAccount = {
           password: "facebookpass",
           uri: "https://facebook.com",
           folder: "Personal",
+          deleted: false,
         },
       ],
     },
@@ -30,6 +32,7 @@ export const mockData: PasswordManagerRootAccount = {
           password: "companypass",
           uri: "https://company.com/email",
           folder: "Work",
+          deleted: false,
         },
       ],
     },

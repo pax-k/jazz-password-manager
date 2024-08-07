@@ -4,13 +4,14 @@ import Table from "../components/table";
 import NewItemModal from "../components/new-item-modal";
 import InviteModal from "../components/invite-modal";
 import { PasswordItem } from "../schema";
-import { flattenedItems, folderNames } from "../data";
+import { flattenedItems, folderNames } from "../mock-data";
 import {
   saveItem,
   updateItem,
   deleteItem,
   createFolder,
   shareFolder,
+  shareItem,
 } from "../actions";
 
 const VaultPage: React.FC = () => {
@@ -21,19 +22,28 @@ const VaultPage: React.FC = () => {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isNewFolderInputVisible, setIsNewFolderInputVisible] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
+  const [editingItem, setEditingItem] = useState<PasswordItem | null>(null);
 
   const filteredItems = selectedFolder
-    ? items.filter((item) => item.folder === selectedFolder)
-    : items;
+    ? items.filter((item) => item.folder === selectedFolder && !item.deleted)
+    : items.filter((item) => !item.deleted);
 
-  const handleSaveNewItem = async (newItem: Partial<PasswordItem>) => {
-    const savedItem = await saveItem(newItem as PasswordItem);
+  const handleSaveNewItem = async (newItem: PasswordItem) => {
+    const savedItem = await saveItem(newItem);
     setItems([...items, savedItem]);
+  };
+
+  const handleUpdateItem = async (updatedItem: PasswordItem) => {
+    const updated = await updateItem(updatedItem);
+    setItems(
+      items.map((item) => (item.name === updated.name ? updated : item))
+    );
+    setEditingItem(null);
   };
 
   const handleDeleteItem = async (item: PasswordItem) => {
     await deleteItem(item);
-    setItems(items.filter((i) => i !== item));
+    setItems(items.map((i) => (i === item ? { ...i, deleted: true } : i)));
   };
 
   const handleCreateFolder = async () => {
@@ -47,7 +57,12 @@ const VaultPage: React.FC = () => {
 
   const handleShareFolder = async (folderName: string, permission: string) => {
     const inviteLink = await shareFolder(folderName, permission);
-    console.log("Invite link created:", inviteLink);
+    console.log("Folder invite link created:", inviteLink);
+  };
+
+  const handleShareItem = async (item: PasswordItem, permission: string) => {
+    const inviteLink = await shareItem(item, permission);
+    console.log("Item invite link created:", inviteLink);
   };
 
   const columns = [
@@ -61,6 +76,13 @@ const VaultPage: React.FC = () => {
         <div className="space-x-2">
           <Button onClick={() => navigator.clipboard.writeText(item.password)}>
             Copy Password
+          </Button>
+          <Button onClick={() => setEditingItem(item)}>Edit</Button>
+          <Button
+            onClick={() => handleShareItem(item, "reader")}
+            variant="secondary"
+          >
+            Share
           </Button>
           <Button onClick={() => handleDeleteItem(item)} variant="danger">
             Delete
@@ -107,10 +129,14 @@ const VaultPage: React.FC = () => {
       </div>
       <Table data={filteredItems} columns={columns} />
       <NewItemModal
-        isOpen={isNewItemModalOpen}
-        onClose={() => setIsNewItemModalOpen(false)}
-        onSave={handleSaveNewItem}
+        isOpen={isNewItemModalOpen || !!editingItem}
+        onClose={() => {
+          setIsNewItemModalOpen(false);
+          setEditingItem(null);
+        }}
+        onSave={editingItem ? handleUpdateItem : handleSaveNewItem}
         folders={folders}
+        editingItem={editingItem}
       />
       <InviteModal
         isOpen={isInviteModalOpen}

@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import BaseModal from "./base-modal";
 import Button from "./button";
+import { getSharedUsers } from "../actions";
 
 interface InviteModalProps {
   isOpen: boolean;
@@ -18,9 +19,15 @@ const InviteModal: React.FC<InviteModalProps> = ({
   const [selectedFolder, setSelectedFolder] = useState(folders[0] || "");
   const [selectedPermission, setSelectedPermission] = useState("reader");
   const [inviteLink, setInviteLink] = useState("");
+  const [sharedUsers, setSharedUsers] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (selectedFolder) {
+      getSharedUsers(selectedFolder).then(setSharedUsers);
+    }
+  }, [selectedFolder]);
 
   const handleCreateInviteLink = () => {
-    // In a real application, this would make an API call to create an invite link
     const link = `https://example.com/invite?folder=${selectedFolder}&permission=${selectedPermission}`;
     setInviteLink(link);
     onInvite(selectedFolder, selectedPermission);
@@ -48,6 +55,18 @@ const InviteModal: React.FC<InviteModalProps> = ({
               </option>
             ))}
           </select>
+        </div>
+        <div>
+          <h3 className="text-lg font-medium">Existing Shared Users</h3>
+          {sharedUsers.length > 0 ? (
+            <ul className="list-disc list-inside">
+              {sharedUsers.map((user, index) => (
+                <li key={index}>{user}</li>
+              ))}
+            </ul>
+          ) : (
+            <p>No users currently have access to this folder.</p>
+          )}
         </div>
         <div>
           <label
