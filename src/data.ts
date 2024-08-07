@@ -3,9 +3,11 @@ import { PasswordManagerRootAccount, PasswordItem, Folder } from "./types";
 export const mockData: PasswordManagerRootAccount = {
   folders: [
     {
+      _id: "folder1",
       name: "Personal",
       items: [
         {
+          _id: "item1",
           name: "Gmail",
           username: "user@gmail.com",
           password: "password123",
@@ -14,6 +16,7 @@ export const mockData: PasswordManagerRootAccount = {
           deleted: false,
         },
         {
+          _id: "item2",
           name: "Facebook",
           username: "user@facebook.com",
           password: "facebookpass",
@@ -24,9 +27,11 @@ export const mockData: PasswordManagerRootAccount = {
       ],
     },
     {
+      _id: "folder2",
       name: "Work",
       items: [
         {
+          _id: "item3",
           name: "Company Email",
           username: "user@company.com",
           password: "companypass",

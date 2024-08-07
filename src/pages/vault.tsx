@@ -3,7 +3,7 @@ import Button from "../components/button";
 import Table from "../components/table";
 import NewItemModal from "../components/new-item-modal";
 import InviteModal from "../components/invite-modal";
-import { PasswordItem } from "../types";
+import { PasswordItem, Folder } from "../types";
 import { flattenedItems, folderNames } from "../mock-data";
 import {
   saveItem,
@@ -33,7 +33,7 @@ const VaultPage: React.FC = () => {
   const handleSaveNewItem = async (newItem: PasswordItem) => {
     try {
       const savedItem = await saveItem(newItem);
-      setItems([...items, savedItem]);
+      setItems((prevItems) => [...prevItems, savedItem]);
     } catch (err) {
       setError("Failed to save new item. Please try again.");
     }
@@ -42,8 +42,8 @@ const VaultPage: React.FC = () => {
   const handleUpdateItem = async (updatedItem: PasswordItem) => {
     try {
       const updated = await updateItem(updatedItem);
-      setItems(
-        items.map((item) => (item.name === updated.name ? updated : item))
+      setItems((prevItems) =>
+        prevItems.map((item) => (item._id === updated._id ? updated : item))
       );
       setEditingItem(null);
     } catch (err) {
@@ -54,7 +54,9 @@ const VaultPage: React.FC = () => {
   const handleDeleteItem = async (item: PasswordItem) => {
     try {
       await deleteItem(item);
-      setItems(items.map((i) => (i === item ? { ...i, deleted: true } : i)));
+      setItems((prevItems) =>
+        prevItems.map((i) => (i._id === item._id ? { ...i, deleted: true } : i))
+      );
     } catch (err) {
       setError("Failed to delete item. Please try again.");
     }
@@ -63,8 +65,8 @@ const VaultPage: React.FC = () => {
   const handleCreateFolder = async () => {
     if (newFolderName) {
       try {
-        await createFolder(newFolderName);
-        setFolders([...folders, newFolderName]);
+        const newFolder = await createFolder(newFolderName);
+        setFolders((prevFolders) => [...prevFolders, newFolder.name]);
         setNewFolderName("");
         setIsNewFolderInputVisible(false);
       } catch (err) {
@@ -97,7 +99,7 @@ const VaultPage: React.FC = () => {
     { header: "URI", accessor: "uri" as const },
     {
       header: "Actions",
-      accessor: "name" as const,
+      accessor: "_id" as const,
       render: (item: PasswordItem) => (
         <div className="flex flex-wrap gap-2">
           <Button onClick={() => navigator.clipboard.writeText(item.password)}>

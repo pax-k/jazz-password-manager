@@ -6,9 +6,17 @@ export const saveItem = (item: PasswordItem): Promise<PasswordItem> => {
     setTimeout(() => {
       const folder = mockData.folders.find((f) => f.name === item.folder);
       if (folder) {
+        if (!item._id) {
+          item._id = `item${Date.now()}`; // Generate a new ID if not provided
+        }
         folder.items.push(item);
       } else {
-        mockData.folders.push({ name: item.folder, items: [item] });
+        const newFolder: Folder = {
+          _id: `folder${Date.now()}`, // Generate a new ID for the folder
+          name: item.folder,
+          items: [{ ...item, _id: `item${Date.now()}` }], // Generate a new ID for the item
+        };
+        mockData.folders.push(newFolder);
       }
       resolve(item);
     }, 500);
@@ -20,7 +28,7 @@ export const updateItem = (item: PasswordItem): Promise<PasswordItem> => {
     setTimeout(() => {
       const folder = mockData.folders.find((f) => f.name === item.folder);
       if (folder) {
-        const index = folder.items.findIndex((i) => i.name === item.name);
+        const index = folder.items.findIndex((i) => i._id === item._id);
         if (index !== -1) {
           folder.items[index] = item;
           resolve(item);
@@ -39,7 +47,7 @@ export const deleteItem = (item: PasswordItem): Promise<void> => {
     setTimeout(() => {
       const folder = mockData.folders.find((f) => f.name === item.folder);
       if (folder) {
-        const index = folder.items.findIndex((i) => i.name === item.name);
+        const index = folder.items.findIndex((i) => i._id === item._id);
         if (index !== -1) {
           folder.items[index] = { ...folder.items[index], deleted: true };
           resolve();
@@ -53,14 +61,19 @@ export const deleteItem = (item: PasswordItem): Promise<void> => {
   });
 };
 
-export const createFolder = (folderName: string): Promise<void> => {
+export const createFolder = (folderName: string): Promise<Folder> => {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       if (mockData.folders.some((f) => f.name === folderName)) {
         reject(new Error("Folder already exists"));
       } else {
-        mockData.folders.push({ name: folderName, items: [] });
-        resolve();
+        const newFolder: Folder = {
+          _id: `folder${Date.now()}`,
+          name: folderName,
+          items: [],
+        };
+        mockData.folders.push(newFolder);
+        resolve(newFolder);
       }
     }, 500);
   });

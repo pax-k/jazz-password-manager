@@ -20,6 +20,7 @@ const NewItemModal: React.FC<NewItemModalProps> = ({
   editingItem,
 }) => {
   const [item, setItem] = useState<PasswordItem>({
+    _id: "",
     name: "",
     username: "",
     password: "",
@@ -36,6 +37,7 @@ const NewItemModal: React.FC<NewItemModalProps> = ({
       setItem(editingItem);
     } else {
       setItem({
+        _id: "", // This will be generated on the server side
         name: "",
         username: "",
         password: "",

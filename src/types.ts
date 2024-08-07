@@ -1,6 +1,7 @@
 import { Account, CoList, CoMap } from "jazz-tools";
 
 export interface PasswordItem extends CoMap {
+  _id: string;
   name: string;
   username?: string;
   username_input_selector?: string;
@@ -12,6 +13,7 @@ export interface PasswordItem extends CoMap {
 }
 
 export interface Folder extends CoMap {
+  _id: string;
   name: string;
   items: PasswordItem[];
 }
