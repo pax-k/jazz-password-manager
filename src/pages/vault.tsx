@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Button from "../components/button";
 import Table from "../components/table";
 import NewItemModal from "../components/new-item-modal";
 import InviteModal from "../components/invite-modal";
-import { PasswordItem, Folder } from "../types";
-import { flattenedItems, folderNames } from "../mock-data";
+import { PasswordItem } from "../types";
+import { flattenedItems, folderNames } from "../data";
 import {
   saveItem,
   updateItem,
@@ -13,7 +13,7 @@ import {
   shareFolder,
   shareItem,
 } from "../actions";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription } from "../components/alert";
 
 const VaultPage: React.FC = () => {
   const [items, setItems] = useState<PasswordItem[]>(flattenedItems);

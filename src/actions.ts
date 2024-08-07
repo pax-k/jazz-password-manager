@@ -1,5 +1,5 @@
 import { PasswordItem, Folder } from "./types";
-import { mockData, flattenedItems } from "./mock-data";
+import { mockData } from "./data";
 
 export const saveItem = (item: PasswordItem): Promise<PasswordItem> => {
   return new Promise((resolve) => {

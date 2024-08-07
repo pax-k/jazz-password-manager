@@ -1,6 +1,4 @@
-import { Account, CoList, CoMap } from "jazz-tools";
-
-export interface PasswordItem extends CoMap {
+export interface PasswordItem {
   _id: string;
   name: string;
   username?: string;
@@ -12,15 +10,15 @@ export interface PasswordItem extends CoMap {
   deleted: boolean;
 }
 
-export interface Folder extends CoMap {
+export interface Folder {
   _id: string;
   name: string;
   items: PasswordItem[];
 }
 
-export interface PasswordManagerRootAccount extends CoMap {
+export interface PasswordManagerRootAccount {
   folders: Folder[];
 }
 
-export type PasswordList = CoList<PasswordItem>;
-export type FolderList = CoList<Folder>;
+export type PasswordList = Array<PasswordItem>;
+export type FolderList = Array<Folder>;

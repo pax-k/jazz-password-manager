@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import BaseModal from "./base-modal";
 import Button from "./button";
 import { PasswordItem } from "../types";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription } from "./alert";
 
 interface NewItemModalProps {
   isOpen: boolean;

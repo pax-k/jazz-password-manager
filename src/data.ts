@@ -1,4 +1,4 @@
-import { PasswordManagerRootAccount, PasswordItem, Folder } from "./types";
+import { PasswordManagerRootAccount, PasswordItem } from "./types";
 
 export const mockData: PasswordManagerRootAccount = {
   folders: [

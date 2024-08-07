@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import BaseModal from "./base-modal";
 import Button from "./button";
 import { getSharedUsers } from "../actions";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription } from "./alert";
 
 interface InviteModalProps {
   isOpen: boolean;
