@@ -13,6 +13,7 @@ import {
   shareFolder,
   shareItem,
 } from "../actions";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const VaultPage: React.FC = () => {
   const [items, setItems] = useState<PasswordItem[]>(flattenedItems);
@@ -23,46 +24,71 @@ const VaultPage: React.FC = () => {
   const [isNewFolderInputVisible, setIsNewFolderInputVisible] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [editingItem, setEditingItem] = useState<PasswordItem | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const filteredItems = selectedFolder
     ? items.filter((item) => item.folder === selectedFolder && !item.deleted)
     : items.filter((item) => !item.deleted);
 
   const handleSaveNewItem = async (newItem: PasswordItem) => {
-    const savedItem = await saveItem(newItem);
-    setItems([...items, savedItem]);
+    try {
+      const savedItem = await saveItem(newItem);
+      setItems([...items, savedItem]);
+    } catch (err) {
+      setError("Failed to save new item. Please try again.");
+    }
   };
 
   const handleUpdateItem = async (updatedItem: PasswordItem) => {
-    const updated = await updateItem(updatedItem);
-    setItems(
-      items.map((item) => (item.name === updated.name ? updated : item))
-    );
-    setEditingItem(null);
+    try {
+      const updated = await updateItem(updatedItem);
+      setItems(
+        items.map((item) => (item.name === updated.name ? updated : item))
+      );
+      setEditingItem(null);
+    } catch (err) {
+      setError("Failed to update item. Please try again.");
+    }
   };
 
   const handleDeleteItem = async (item: PasswordItem) => {
-    await deleteItem(item);
-    setItems(items.map((i) => (i === item ? { ...i, deleted: true } : i)));
+    try {
+      await deleteItem(item);
+      setItems(items.map((i) => (i === item ? { ...i, deleted: true } : i)));
+    } catch (err) {
+      setError("Failed to delete item. Please try again.");
+    }
   };
 
   const handleCreateFolder = async () => {
     if (newFolderName) {
-      await createFolder(newFolderName);
-      setFolders([...folders, newFolderName]);
-      setNewFolderName("");
-      setIsNewFolderInputVisible(false);
+      try {
+        await createFolder(newFolderName);
+        setFolders([...folders, newFolderName]);
+        setNewFolderName("");
+        setIsNewFolderInputVisible(false);
+      } catch (err) {
+        setError("Failed to create folder. Please try again.");
+      }
     }
   };
 
   const handleShareFolder = async (folderName: string, permission: string) => {
-    const inviteLink = await shareFolder(folderName, permission);
-    console.log("Folder invite link created:", inviteLink);
+    try {
+      const inviteLink = await shareFolder(folderName, permission);
+      console.log("Folder invite link created:", inviteLink);
+    } catch (err) {
+      setError("Failed to share folder. Please try again.");
+    }
   };
 
   const handleShareItem = async (item: PasswordItem, permission: string) => {
-    const inviteLink = await shareItem(item, permission);
-    console.log("Item invite link created:", inviteLink);
+    try {
+      const inviteLink = await shareItem(item, permission);
+      console.log("Item invite link created:", inviteLink);
+    } catch (err) {
+      setError("Failed to share item. Please try again.");
+    }
   };
 
   const columns = [
@@ -73,7 +99,7 @@ const VaultPage: React.FC = () => {
       header: "Actions",
       accessor: "name" as const,
       render: (item: PasswordItem) => (
-        <div className="space-x-2">
+        <div className="flex flex-wrap gap-2">
           <Button onClick={() => navigator.clipboard.writeText(item.password)}>
             Copy Password
           </Button>
@@ -95,8 +121,13 @@ const VaultPage: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Password Vault</h1>
-      <div className="mb-4 flex justify-between items-center">
-        <div className="space-x-2">
+      {error && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      <div className="mb-4 flex flex-wrap justify-between items-center gap-4">
+        <div className="flex flex-wrap gap-2">
           {folders.map((folder) => (
             <Button
               key={folder}
@@ -107,12 +138,12 @@ const VaultPage: React.FC = () => {
             </Button>
           ))}
           {isNewFolderInputVisible ? (
-            <div className="inline-block">
+            <div className="flex gap-2">
               <input
                 type="text"
                 value={newFolderName}
                 onChange={(e) => setNewFolderName(e.target.value)}
-                className="border rounded px-2 py-1 mr-2"
+                className="border rounded px-2 py-1"
               />
               <Button onClick={handleCreateFolder}>Save</Button>
             </div>
@@ -122,12 +153,14 @@ const VaultPage: React.FC = () => {
             </Button>
           )}
         </div>
-        <div className="space-x-2">
+        <div className="flex gap-2">
           <Button onClick={() => setIsNewItemModalOpen(true)}>New Item</Button>
           <Button onClick={() => setIsInviteModalOpen(true)}>Share</Button>
         </div>
       </div>
-      <Table data={filteredItems} columns={columns} />
+      <div className="overflow-x-auto">
+        <Table data={filteredItems} columns={columns} />
+      </div>
       <NewItemModal
         isOpen={isNewItemModalOpen || !!editingItem}
         onClose={() => {

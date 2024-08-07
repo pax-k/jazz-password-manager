@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import BaseModal from "./base-modal";
 import Button from "./button";
 import { PasswordItem } from "../schema";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface NewItemModalProps {
   isOpen: boolean;
@@ -26,6 +27,9 @@ const NewItemModal: React.FC<NewItemModalProps> = ({
     folder: folders[0] || "",
     deleted: false,
   });
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof PasswordItem, string>>
+  >({});
 
   useEffect(() => {
     if (editingItem) {
@@ -40,6 +44,7 @@ const NewItemModal: React.FC<NewItemModalProps> = ({
         deleted: false,
       });
     }
+    setErrors({});
   }, [editingItem, folders]);
 
   const handleChange = (
@@ -47,12 +52,38 @@ const NewItemModal: React.FC<NewItemModalProps> = ({
   ) => {
     const { name, value } = e.target;
     setItem((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors: Partial<Record<keyof PasswordItem, string>> = {};
+
+    if (!item.name.trim()) {
+      newErrors.name = "Name is required";
+    }
+    if (!item.password.trim()) {
+      newErrors.password = "Password is required";
+    } else if (item.password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters long";
+    }
+    if (
+      item.uri &&
+      !item.uri.startsWith("http://") &&
+      !item.uri.startsWith("https://")
+    ) {
+      newErrors.uri = "URI must start with http:// or https://";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(item);
-    onClose();
+    if (validateForm()) {
+      onSave(item);
+      onClose();
+    }
   };
 
   return (
@@ -78,6 +109,11 @@ const NewItemModal: React.FC<NewItemModalProps> = ({
             value={item.name}
             onChange={handleChange}
           />
+          {errors.name && (
+            <Alert variant="destructive">
+              <AlertDescription>{errors.name}</AlertDescription>
+            </Alert>
+          )}
         </div>
         <div>
           <label
@@ -111,6 +147,11 @@ const NewItemModal: React.FC<NewItemModalProps> = ({
             value={item.password}
             onChange={handleChange}
           />
+          {errors.password && (
+            <Alert variant="destructive">
+              <AlertDescription>{errors.password}</AlertDescription>
+            </Alert>
+          )}
         </div>
         <div>
           <label
@@ -127,6 +168,11 @@ const NewItemModal: React.FC<NewItemModalProps> = ({
             value={item.uri}
             onChange={handleChange}
           />
+          {errors.uri && (
+            <Alert variant="destructive">
+              <AlertDescription>{errors.uri}</AlertDescription>
+            </Alert>
+          )}
         </div>
         <div>
           <label
