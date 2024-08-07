@@ -3,7 +3,7 @@ import Button from "../components/button";
 import Table from "../components/table";
 import NewItemModal from "../components/new-item-modal";
 import InviteModal from "../components/invite-modal";
-import { PasswordItem } from "../schema";
+import { PasswordItem } from "../types";
 import { flattenedItems, folderNames } from "../mock-data";
 import {
   saveItem,

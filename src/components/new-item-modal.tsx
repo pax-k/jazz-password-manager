@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import BaseModal from "./base-modal";
 import Button from "./button";
-import { PasswordItem } from "../schema";
+import { PasswordItem } from "../types";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface NewItemModalProps {

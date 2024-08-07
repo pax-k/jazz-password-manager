@@ -1,5 +1,5 @@
-import { PasswordItem } from "./schema";
-import { mockData, flattenedItems } from "./data";
+import { PasswordItem, Folder } from "./types";
+import { mockData, flattenedItems } from "./mock-data";
 
 export const saveItem = (item: PasswordItem): Promise<PasswordItem> => {
   return new Promise((resolve) => {
@@ -41,7 +41,7 @@ export const deleteItem = (item: PasswordItem): Promise<void> => {
       if (folder) {
         const index = folder.items.findIndex((i) => i.name === item.name);
         if (index !== -1) {
-          folder.items.splice(index, 1);
+          folder.items[index] = { ...folder.items[index], deleted: true };
           resolve();
         } else {
           reject(new Error("Item not found"));
@@ -72,7 +72,6 @@ export const shareFolder = (
 ): Promise<string> => {
   return new Promise((resolve) => {
     setTimeout(() => {
-      // In a real app, this would generate a unique invite link
       const inviteLink = `https://example.com/invite?folder=${folderName}&permission=${permission}`;
       resolve(inviteLink);
     }, 500);
@@ -85,7 +84,6 @@ export const shareItem = (
 ): Promise<string> => {
   return new Promise((resolve) => {
     setTimeout(() => {
-      // In a real app, this would generate a unique invite link
       const inviteLink = `https://example.com/invite?item=${item.name}&permission=${permission}`;
       resolve(inviteLink);
     }, 500);
@@ -95,7 +93,6 @@ export const shareItem = (
 export const getSharedUsers = (folderName: string): Promise<string[]> => {
   return new Promise((resolve) => {
     setTimeout(() => {
-      // In a real app, this would fetch the actual shared users
       resolve(["user1@example.com", "user2@example.com"]);
     }, 500);
   });
