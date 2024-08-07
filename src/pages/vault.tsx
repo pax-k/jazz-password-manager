@@ -11,10 +11,10 @@ import {
   deleteItem,
   createFolder,
   shareFolder,
-  shareItem,
   logout,
 } from "../actions";
 import { Alert, AlertDescription } from "../components/alert";
+import SharePasswordModal from "../components/share-password-modal";
 
 const VaultPage: React.FC = () => {
   const [items, setItems] = useState<PasswordItem[]>(flattenedItems);
@@ -22,9 +22,12 @@ const VaultPage: React.FC = () => {
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const [isNewItemModalOpen, setIsNewItemModalOpen] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [isSharePasswordModalOpen, setIsSharePasswordModalOpen] =
+    useState(false);
   const [isNewFolderInputVisible, setIsNewFolderInputVisible] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [editingItem, setEditingItem] = useState<PasswordItem | null>(null);
+  const [sharingItem, setSharingItem] = useState<PasswordItem | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const filteredItems = selectedFolder
@@ -85,13 +88,9 @@ const VaultPage: React.FC = () => {
     }
   };
 
-  const handleShareItem = async (item: PasswordItem, permission: string) => {
-    try {
-      const inviteLink = await shareItem(item, permission);
-      console.log("Item invite link created:", inviteLink);
-    } catch (err) {
-      setError("Failed to share item. Please try again.");
-    }
+  const handleShareItem = (item: PasswordItem) => {
+    setSharingItem(item);
+    setIsSharePasswordModalOpen(true);
   };
 
   const handleLogout = async () => {
@@ -117,10 +116,7 @@ const VaultPage: React.FC = () => {
             Copy Password
           </Button>
           <Button onClick={() => setEditingItem(item)}>Edit</Button>
-          <Button
-            onClick={() => handleShareItem(item, "reader")}
-            variant="secondary"
-          >
+          <Button onClick={() => handleShareItem(item)} variant="secondary">
             Share
           </Button>
           <Button onClick={() => handleDeleteItem(item)} variant="danger">
@@ -194,6 +190,14 @@ const VaultPage: React.FC = () => {
         onClose={() => setIsInviteModalOpen(false)}
         folders={folders}
         onInvite={handleShareFolder}
+      />
+      <SharePasswordModal
+        isOpen={isSharePasswordModalOpen}
+        onClose={() => {
+          setIsSharePasswordModalOpen(false);
+          setSharingItem(null);
+        }}
+        passwordItem={sharingItem}
       />
     </div>
   );
