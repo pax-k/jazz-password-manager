@@ -1,18 +1,36 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { login, register } from "../actions";
 import Button from "../components/button";
+import { Alert, AlertDescription } from "../components/alert";
 
 const AuthPage: React.FC = () => {
-  const [isSignIn, setIsSignIn] = useState(true);
+  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement actual authentication logic
-    console.log(isSignIn ? "Signing in" : "Creating account", {
-      email,
-      password,
-    });
+    setError(null);
+
+    try {
+      let success;
+      if (isLogin) {
+        success = await login(email, password);
+      } else {
+        success = await register(email, password);
+      }
+
+      if (success) {
+        navigate("/vault");
+      } else {
+        setError(isLogin ? "Invalid credentials" : "Registration failed");
+      }
+    } catch (err) {
+      setError("An error occurred. Please try again.");
+    }
   };
 
   return (
@@ -20,11 +38,15 @@ const AuthPage: React.FC = () => {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            {isSignIn ? "Sign in to your account" : "Create a new account"}
+            {isLogin ? "Sign in to your account" : "Create a new account"}
           </h2>
         </div>
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <input type="hidden" name="remember" value="true" />
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
               <label htmlFor="email-address" className="sr-only">
@@ -62,17 +84,17 @@ const AuthPage: React.FC = () => {
 
           <div>
             <Button type="submit" className="w-full">
-              {isSignIn ? "Sign in" : "Create account"}
+              {isLogin ? "Sign in" : "Register"}
             </Button>
           </div>
         </form>
         <div className="text-center">
           <Button
             variant="secondary"
-            onClick={() => setIsSignIn(!isSignIn)}
+            onClick={() => setIsLogin(!isLogin)}
             className="mt-2"
           >
-            {isSignIn ? "Create an account" : "Sign in to existing account"}
+            {isLogin ? "Create an account" : "Sign in to existing account"}
           </Button>
         </div>
       </div>

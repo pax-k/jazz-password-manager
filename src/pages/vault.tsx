@@ -12,6 +12,7 @@ import {
   createFolder,
   shareFolder,
   shareItem,
+  logout,
 } from "../actions";
 import { Alert, AlertDescription } from "../components/alert";
 
@@ -93,6 +94,16 @@ const VaultPage: React.FC = () => {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+      // The App component will automatically redirect to the login page
+      // due to the useAuth hook
+    } catch (err) {
+      setError("Failed to logout. Please try again.");
+    }
+  };
+
   const columns = [
     { header: "Name", accessor: "name" as const },
     { header: "Username", accessor: "username" as const },
@@ -120,9 +131,14 @@ const VaultPage: React.FC = () => {
     },
   ];
 
+  console.log("isInviteModalOpen", isInviteModalOpen);
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Password Vault</h1>
+      <Button onClick={handleLogout} variant="secondary">
+        Logout
+      </Button>
       {error && (
         <Alert variant="destructive" className="mb-4">
           <AlertDescription>{error}</AlertDescription>

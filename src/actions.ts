@@ -1,6 +1,55 @@
 import { PasswordItem, Folder } from "./types";
 import { mockData } from "./data";
 
+// Mock user data
+const mockUser = {
+  email: "user@example.com",
+  password: "password123",
+};
+
+const dispatchLoginEvent = (isLoggedIn: boolean) => {
+  window.dispatchEvent(
+    new CustomEvent("loginStateChanged", { detail: isLoggedIn })
+  );
+};
+
+export const login = (email: string, password: string): Promise<boolean> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      if (email === mockUser.email && password === mockUser.password) {
+        localStorage.setItem("isLoggedIn", "true");
+        dispatchLoginEvent(true);
+        resolve(true);
+      } else {
+        resolve(false);
+      }
+    }, 500);
+  });
+};
+
+export const logout = (): Promise<void> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      localStorage.removeItem("isLoggedIn");
+      dispatchLoginEvent(false);
+      resolve();
+    }, 500);
+  });
+};
+
+export const register = (email: string, password: string): Promise<boolean> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      // In a real app, you'd check if the user already exists
+      mockUser.email = email;
+      mockUser.password = password;
+      localStorage.setItem("isLoggedIn", "true");
+      dispatchLoginEvent(true);
+      resolve(true);
+    }, 500);
+  });
+};
+
 export const saveItem = (item: PasswordItem): Promise<PasswordItem> => {
   return new Promise((resolve) => {
     setTimeout(() => {
