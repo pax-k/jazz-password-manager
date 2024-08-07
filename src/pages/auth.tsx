@@ -6,8 +6,8 @@ import { Alert, AlertDescription } from "../components/alert";
 
 const AuthPage: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("user@domain.com");
+  const [password, setPassword] = useState("12345678");
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 

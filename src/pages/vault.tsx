@@ -3,8 +3,8 @@ import Button from "../components/button";
 import Table from "../components/table";
 import NewItemModal from "../components/new-item-modal";
 import InviteModal from "../components/invite-modal";
-import { PasswordItem } from "../types";
-import { flattenedItems, folderNames } from "../data";
+// import { PasswordItem } from "../types";
+// import { flattenedItems, folderNames } from "../data";
 import {
   saveItem,
   updateItem,
@@ -15,11 +15,28 @@ import {
 } from "../actions";
 import { Alert, AlertDescription } from "../components/alert";
 import SharePasswordModal from "../components/share-password-modal";
+import { Folder, FolderList, PasswordItem } from "../schema";
+import { useAccount, useCoState } from "../main";
+import { CoMapInit } from "jazz-tools";
 
 const VaultPage: React.FC = () => {
-  const [items, setItems] = useState<PasswordItem[]>(flattenedItems);
-  const [folders, setFolders] = useState<string[]>(folderNames);
-  const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
+  const { me } = useAccount();
+  // const [] = useCoState(FolderList, me.root?.folders?.id);
+  const items = me.root?.folders?.flatMap(
+    (folder) =>
+      folder?.items?.filter(
+        (item): item is Exclude<typeof item, null> => !!item
+      ) || []
+  );
+  const folders = useCoState(FolderList, me.root?._refs.folders?.id, [
+    { items: [{}] },
+  ]);
+
+  console.log("folders", folders);
+
+  // const [items, setItems] = useState<PasswordItem[]>(me.root?.folders ?? []);
+  // const [folders, setFolders] = useState<string[]>(folderNames);
+  const [selectedFolder, setSelectedFolder] = useState<string | undefined>();
   const [isNewItemModalOpen, setIsNewItemModalOpen] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isSharePasswordModalOpen, setIsSharePasswordModalOpen] =
@@ -31,24 +48,26 @@ const VaultPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const filteredItems = selectedFolder
-    ? items.filter((item) => item.folder === selectedFolder && !item.deleted)
-    : items.filter((item) => !item.deleted);
+    ? items?.filter(
+        (item) => item?.folder?.name === selectedFolder && !item.deleted
+      )
+    : items?.filter((item) => !item?.deleted);
 
-  const handleSaveNewItem = async (newItem: PasswordItem) => {
+  const handleSaveNewItem = async (newItem: CoMapInit<PasswordItem>) => {
     try {
       const savedItem = await saveItem(newItem);
-      setItems((prevItems) => [...prevItems, savedItem]);
+      // setItems((prevItems) => [...prevItems, savedItem]);
     } catch (err) {
       setError("Failed to save new item. Please try again.");
     }
   };
 
-  const handleUpdateItem = async (updatedItem: PasswordItem) => {
+  const handleUpdateItem = async (updatedItem: CoMapInit<PasswordItem>) => {
     try {
       const updated = await updateItem(updatedItem);
-      setItems((prevItems) =>
-        prevItems.map((item) => (item._id === updated._id ? updated : item))
-      );
+      // setItems((prevItems) =>
+      //   prevItems.map((item) => (item._id === updated._id ? updated : item))
+      // );
       setEditingItem(null);
     } catch (err) {
       setError("Failed to update item. Please try again.");
@@ -58,9 +77,9 @@ const VaultPage: React.FC = () => {
   const handleDeleteItem = async (item: PasswordItem) => {
     try {
       await deleteItem(item);
-      setItems((prevItems) =>
-        prevItems.map((i) => (i._id === item._id ? { ...i, deleted: true } : i))
-      );
+      // setItems((prevItems) =>
+      //   prevItems.map((i) => (i._id === item._id ? { ...i, deleted: true } : i))
+      // );
     } catch (err) {
       setError("Failed to delete item. Please try again.");
     }
@@ -70,7 +89,7 @@ const VaultPage: React.FC = () => {
     if (newFolderName) {
       try {
         const newFolder = await createFolder(newFolderName);
-        setFolders((prevFolders) => [...prevFolders, newFolder.name]);
+        // setFolders((prevFolders) => [...prevFolders, newFolder.name]);
         setNewFolderName("");
         setIsNewFolderInputVisible(false);
       } catch (err) {
@@ -79,9 +98,9 @@ const VaultPage: React.FC = () => {
     }
   };
 
-  const handleShareFolder = async (folderName: string, permission: string) => {
+  const handleShareFolder = async (folder: Folder, permission: string) => {
     try {
-      const inviteLink = await shareFolder(folderName, permission);
+      const inviteLink = await shareFolder(folder.name, permission);
       console.log("Folder invite link created:", inviteLink);
     } catch (err) {
       setError("Failed to share folder. Please try again.");
@@ -109,7 +128,7 @@ const VaultPage: React.FC = () => {
     { header: "URI", accessor: "uri" as const },
     {
       header: "Actions",
-      accessor: "_id" as const,
+      accessor: "id" as const,
       render: (item: PasswordItem) => (
         <div className="flex flex-wrap gap-2">
           <Button onClick={() => navigator.clipboard.writeText(item.password)}>
@@ -127,14 +146,14 @@ const VaultPage: React.FC = () => {
     },
   ];
 
-  console.log("isInviteModalOpen", isInviteModalOpen);
-
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Password Vault</h1>
-      <Button onClick={handleLogout} variant="secondary">
-        Logout
-      </Button>
+      <div className="container flex justify-between items-center">
+        <h1 className="text-3xl font-bold mb-8">Password Vault</h1>
+        <Button onClick={handleLogout} variant="secondary">
+          Logout
+        </Button>
+      </div>
       {error && (
         <Alert variant="destructive" className="mb-4">
           <AlertDescription>{error}</AlertDescription>
@@ -142,13 +161,15 @@ const VaultPage: React.FC = () => {
       )}
       <div className="mb-4 flex flex-wrap justify-between items-center gap-4">
         <div className="flex flex-wrap gap-2">
-          {folders.map((folder) => (
+          {folders?.map((folder) => (
             <Button
-              key={folder}
-              onClick={() => setSelectedFolder(folder)}
-              variant={selectedFolder === folder ? "primary" : "secondary"}
+              // key={folder}
+              onClick={() => setSelectedFolder(folder?.name)}
+              variant={
+                selectedFolder === folder?.name ? "primary" : "secondary"
+              }
             >
-              {folder}
+              {folder?.name}
             </Button>
           ))}
           {isNewFolderInputVisible ? (
@@ -175,22 +196,27 @@ const VaultPage: React.FC = () => {
       <div className="overflow-x-auto">
         <Table data={filteredItems} columns={columns} />
       </div>
-      <NewItemModal
-        isOpen={isNewItemModalOpen || !!editingItem}
-        onClose={() => {
-          setIsNewItemModalOpen(false);
-          setEditingItem(null);
-        }}
-        onSave={editingItem ? handleUpdateItem : handleSaveNewItem}
-        folders={folders}
-        editingItem={editingItem}
-      />
-      <InviteModal
-        isOpen={isInviteModalOpen}
-        onClose={() => setIsInviteModalOpen(false)}
-        folders={folders}
-        onInvite={handleShareFolder}
-      />
+      {folders ? (
+        <NewItemModal
+          isOpen={isNewItemModalOpen || !!editingItem}
+          onClose={() => {
+            setIsNewItemModalOpen(false);
+            setEditingItem(null);
+          }}
+          onSave={editingItem ? handleUpdateItem : handleSaveNewItem}
+          folders={folders}
+          editingItem={editingItem}
+        />
+      ) : null}
+
+      {folders ? (
+        <InviteModal
+          isOpen={isInviteModalOpen}
+          onClose={() => setIsInviteModalOpen(false)}
+          folders={folders}
+          onInvite={handleShareFolder}
+        />
+      ) : null}
       <SharePasswordModal
         isOpen={isSharePasswordModalOpen}
         onClose={() => {

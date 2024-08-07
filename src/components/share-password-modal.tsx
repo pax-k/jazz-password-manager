@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import BaseModal from "./base-modal";
 import Button from "./button";
-import { PasswordItem } from "../types";
 import { shareItem } from "../actions";
 import { Alert, AlertDescription } from "./alert";
+import { PasswordItem } from "../schema";
 
 interface SharePasswordModalProps {
   isOpen: boolean;

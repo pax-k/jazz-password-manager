@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from "react";
 import BaseModal from "./base-modal";
 import Button from "./button";
-import { PasswordItem } from "../types";
+// import { PasswordItem } from "../types";
 import { Alert, AlertDescription } from "./alert";
+import { Folder, PasswordItem } from "../schema";
+import { CoMapInit } from "jazz-tools";
 
 interface NewItemModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (item: PasswordItem) => void;
-  folders: string[];
+  onSave: (item: CoMapInit<PasswordItem>) => void;
+  folders: Folder[];
   editingItem: PasswordItem | null;
 }
 
@@ -19,13 +21,11 @@ const NewItemModal: React.FC<NewItemModalProps> = ({
   folders,
   editingItem,
 }) => {
-  const [item, setItem] = useState<PasswordItem>({
-    _id: "",
+  const [item, setItem] = useState<Partial<CoMapInit<PasswordItem>>>({
     name: "",
     username: "",
     password: "",
     uri: "",
-    folder: folders[0] || "",
     deleted: false,
   });
   const [errors, setErrors] = useState<
@@ -37,12 +37,10 @@ const NewItemModal: React.FC<NewItemModalProps> = ({
       setItem(editingItem);
     } else {
       setItem({
-        _id: "", // This will be generated on the server side
         name: "",
         username: "",
         password: "",
         uri: "",
-        folder: folders[0] || "",
         deleted: false,
       });
     }
@@ -60,10 +58,10 @@ const NewItemModal: React.FC<NewItemModalProps> = ({
   const validateForm = (): boolean => {
     const newErrors: Partial<Record<keyof PasswordItem, string>> = {};
 
-    if (!item.name.trim()) {
+    if (!item.name?.trim()) {
       newErrors.name = "Name is required";
     }
-    if (!item.password.trim()) {
+    if (!item.password?.trim()) {
       newErrors.password = "Password is required";
     } else if (item.password.length < 8) {
       newErrors.password = "Password must be at least 8 characters long";
@@ -83,7 +81,7 @@ const NewItemModal: React.FC<NewItemModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      onSave(item);
+      onSave(item as CoMapInit<PasswordItem>);
       onClose();
     }
   };
@@ -188,12 +186,12 @@ const NewItemModal: React.FC<NewItemModalProps> = ({
             id="folder"
             required
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            value={item.folder}
+            value={item.folder?.name}
             onChange={handleChange}
           >
             {folders.map((folder) => (
-              <option key={folder} value={folder}>
-                {folder}
+              <option key={folder.id} value={folder.name}>
+                {folder.name}
               </option>
             ))}
           </select>

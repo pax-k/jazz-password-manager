@@ -1,5 +1,8 @@
-import { PasswordItem, Folder } from "./types";
-import { mockData } from "./data";
+// import { PasswordItem, Folder } from "./types";
+// import { mockData } from "./data";
+
+import { Group } from "jazz-tools";
+import { Folder, PasswordItem } from "./schema";
 
 // Mock user data
 const mockUser = {
@@ -152,7 +155,8 @@ export const shareItem = (
   });
 };
 
-export const getSharedUsers = (folderName: string): Promise<string[]> => {
+export const getSharedUsers = (folder: Folder): Promise<string[]> => {
+  folder._owner.castAs(Group).members;
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve(["user1@example.com", "user2@example.com"]);

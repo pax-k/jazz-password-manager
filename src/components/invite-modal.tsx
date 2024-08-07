@@ -3,12 +3,13 @@ import BaseModal from "./base-modal";
 import Button from "./button";
 import { getSharedUsers } from "../actions";
 import { Alert, AlertDescription } from "./alert";
+import { Folder } from "../schema";
 
 interface InviteModalProps {
   isOpen: boolean;
   onClose: () => void;
-  folders: string[];
-  onInvite: (folderName: string, permission: string) => void;
+  folders: Folder[];
+  onInvite: (folder: Folder, permission: string) => void;
 }
 
 const InviteModal: React.FC<InviteModalProps> = ({
@@ -17,7 +18,10 @@ const InviteModal: React.FC<InviteModalProps> = ({
   folders,
   onInvite,
 }) => {
-  const [selectedFolder, setSelectedFolder] = useState(folders[0] || "");
+  const [selectedFolderId, setSelectedFolderId] = useState("");
+  const selectedFolder = folders.find(
+    (folder) => folder.id === selectedFolderId
+  );
   const [selectedPermission, setSelectedPermission] = useState("reader");
   const [inviteLink, setInviteLink] = useState("");
   const [sharedUsers, setSharedUsers] = useState<string[]>([]);
@@ -36,7 +40,9 @@ const InviteModal: React.FC<InviteModalProps> = ({
   const handleCreateInviteLink = () => {
     const link = `https://example.com/invite?folder=${selectedFolder}&permission=${selectedPermission}`;
     setInviteLink(link);
-    onInvite(selectedFolder, selectedPermission);
+    if (selectedFolder) {
+      onInvite(selectedFolder, selectedPermission);
+    }
   };
 
   return (
@@ -57,12 +63,12 @@ const InviteModal: React.FC<InviteModalProps> = ({
           <select
             id="folder"
             className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-            value={selectedFolder}
-            onChange={(e) => setSelectedFolder(e.target.value)}
+            value={selectedFolderId}
+            onChange={(e) => setSelectedFolderId(e.target.value)}
           >
             {folders.map((folder) => (
-              <option key={folder} value={folder}>
-                {folder}
+              <option key={folder.id} value={folder.name}>
+                {folder.name}
               </option>
             ))}
           </select>

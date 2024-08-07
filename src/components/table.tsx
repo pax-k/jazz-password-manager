@@ -7,7 +7,7 @@ interface Column<T> {
 }
 
 interface TableProps<T> {
-  data: T[];
+  data: T[] | undefined;
   columns: Column<T>[];
   onRowClick?: (item: T) => void;
 }
@@ -30,7 +30,7 @@ function Table<T>({ data, columns, onRowClick }: TableProps<T>) {
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {data.map((item, rowIndex) => (
+          {data?.map((item, rowIndex) => (
             <tr
               key={rowIndex}
               onClick={() => onRowClick && onRowClick(item)}
