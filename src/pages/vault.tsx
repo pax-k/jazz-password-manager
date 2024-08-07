@@ -32,6 +32,7 @@ const VaultPage: React.FC = () => {
     { items: [{}] },
   ]);
 
+  console.log("me", me);
   console.log("folders", folders);
 
   // const [items, setItems] = useState<PasswordItem[]>(me.root?.folders ?? []);
@@ -55,19 +56,25 @@ const VaultPage: React.FC = () => {
 
   const handleSaveNewItem = async (newItem: CoMapInit<PasswordItem>) => {
     try {
-      const savedItem = await saveItem(newItem);
-      // setItems((prevItems) => [...prevItems, savedItem]);
+      saveItem(newItem);
     } catch (err) {
       setError("Failed to save new item. Please try again.");
+      throw new Error(err);
     }
   };
 
   const handleUpdateItem = async (updatedItem: CoMapInit<PasswordItem>) => {
+    console.log("updatedItem", updatedItem);
+    if (!editingItem) return;
     try {
-      const updated = await updateItem(updatedItem);
-      // setItems((prevItems) =>
-      //   prevItems.map((item) => (item._id === updated._id ? updated : item))
-      // );
+      // TODO: apply diff to editedItem
+      for (const keyStr of Object.keys(editingItem)) {
+        const key = keyStr as keyof CoMapInit<PasswordItem>;
+        if (editingItem[key] !== updatedItem[key]) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (editingItem as any)[key] = updatedItem[key];
+        }
+      }
       setEditingItem(null);
     } catch (err) {
       setError("Failed to update item. Please try again.");
@@ -88,7 +95,7 @@ const VaultPage: React.FC = () => {
   const handleCreateFolder = async () => {
     if (newFolderName) {
       try {
-        const newFolder = await createFolder(newFolderName);
+        const newFolder = createFolder(newFolderName, me);
         // setFolders((prevFolders) => [...prevFolders, newFolder.name]);
         setNewFolderName("");
         setIsNewFolderInputVisible(false);
@@ -145,6 +152,8 @@ const VaultPage: React.FC = () => {
       ),
     },
   ];
+
+  console.log("editingItem", editingItem);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -205,7 +214,10 @@ const VaultPage: React.FC = () => {
           }}
           onSave={editingItem ? handleUpdateItem : handleSaveNewItem}
           folders={folders}
-          editingItem={editingItem}
+          // editingItem={editingItem}
+          initialValues={
+            editingItem && editingItem.folder ? { ...editingItem } : undefined
+          }
         />
       ) : null}
 

@@ -2,7 +2,15 @@
 // import { mockData } from "./data";
 
 import { Group } from "jazz-tools";
-import { Folder, PasswordItem } from "./schema";
+import {
+  Folder,
+  PasswordItem,
+  PasswordList,
+  PasswordManagerAccount,
+} from "./schema";
+import { Profile } from "jazz-tools";
+import { Account } from "jazz-tools";
+import { CoMapInit } from "jazz-tools";
 
 // Mock user data
 const mockUser = {
@@ -53,45 +61,42 @@ export const register = (email: string, password: string): Promise<boolean> => {
   });
 };
 
-export const saveItem = (item: PasswordItem): Promise<PasswordItem> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const folder = mockData.folders.find((f) => f.name === item.folder);
-      if (folder) {
-        if (!item._id) {
-          item._id = `item${Date.now()}`; // Generate a new ID if not provided
-        }
-        folder.items.push(item);
-      } else {
-        const newFolder: Folder = {
-          _id: `folder${Date.now()}`, // Generate a new ID for the folder
-          name: item.folder,
-          items: [{ ...item, _id: `item${Date.now()}` }], // Generate a new ID for the item
-        };
-        mockData.folders.push(newFolder);
-      }
-      resolve(item);
-    }, 500);
+export const saveItem = (item: CoMapInit<PasswordItem>): PasswordItem => {
+  console.log("item to save", item);
+  const passwordItem = PasswordItem.create(item, {
+    owner: item.folder!._owner,
   });
+  passwordItem.folder?.items?.push(passwordItem);
+  return passwordItem;
+
+  // return new Promise((resolve) => {
+  //   setTimeout(() => {
+  //     const folder = mockData.folders.find((f) => f.name === item.folder);
+  //     if (folder) {
+  //       if (!item._id) {
+  //         item._id = `item${Date.now()}`; // Generate a new ID if not provided
+  //       }
+  //       folder.items.push(item);
+  //     } else {
+  //       const newFolder: Folder = {
+  //         _id: `folder${Date.now()}`, // Generate a new ID for the folder
+  //         name: item.folder,
+  //         items: [{ ...item, _id: `item${Date.now()}` }], // Generate a new ID for the item
+  //       };
+  //       mockData.folders.push(newFolder);
+  //     }
+  //     resolve(item);
+  //   }, 500);
+  // });
 };
 
-export const updateItem = (item: PasswordItem): Promise<PasswordItem> => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      const folder = mockData.folders.find((f) => f.name === item.folder);
-      if (folder) {
-        const index = folder.items.findIndex((i) => i._id === item._id);
-        if (index !== -1) {
-          folder.items[index] = item;
-          resolve(item);
-        } else {
-          reject(new Error("Item not found"));
-        }
-      } else {
-        reject(new Error("Folder not found"));
-      }
-    }, 500);
+export const updateItem = (item: PasswordItem): PasswordItem => {
+  item;
+  const passwordItem = PasswordItem.create(item, {
+    owner: item.folder!._owner,
   });
+  passwordItem.folder?.items?.push(passwordItem);
+  return passwordItem;
 };
 
 export const deleteItem = (item: PasswordItem): Promise<void> => {
@@ -113,22 +118,32 @@ export const deleteItem = (item: PasswordItem): Promise<void> => {
   });
 };
 
-export const createFolder = (folderName: string): Promise<Folder> => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      if (mockData.folders.some((f) => f.name === folderName)) {
-        reject(new Error("Folder already exists"));
-      } else {
-        const newFolder: Folder = {
-          _id: `folder${Date.now()}`,
-          name: folderName,
-          items: [],
-        };
-        mockData.folders.push(newFolder);
-        resolve(newFolder);
-      }
-    }, 500);
-  });
+export const createFolder = (
+  folderName: string,
+  me: PasswordManagerAccount
+): Folder => {
+  const group = Group.create({ owner: me });
+  const folder = Folder.create(
+    { name: folderName, items: PasswordList.create([], { owner: group }) },
+    { owner: group }
+  );
+  me.root?.folders?.push(folder);
+  return folder;
+  // return new Promise((resolve, reject) => {
+  //   setTimeout(() => {
+  //     if (mockData.folders.some((f) => f.name === folderName)) {
+  //       reject(new Error("Folder already exists"));
+  //     } else {
+  //       const newFolder: Folder = {
+  //         _id: `folder${Date.now()}`,
+  //         name: folderName,
+  //         items: [],
+  //       };
+  //       mockData.folders.push(newFolder);
+  //       resolve(newFolder);
+  //     }
+  //   }, 500);
+  // });
 };
 
 export const shareFolder = (

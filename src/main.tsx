@@ -19,9 +19,7 @@ const Jazz = createJazzReactContext<PasswordManagerAccount>({
 export const { useAccount, useCoState, useAcceptInvite } = Jazz;
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <Jazz.Provider>
-      <App />
-    </Jazz.Provider>
-  </React.StrictMode>
+  <Jazz.Provider>
+    <App />
+  </Jazz.Provider>
 );
