@@ -32,6 +32,7 @@ const NewItemModal: React.FC<NewItemModalProps> = ({
       deleted: false,
     }
   );
+
   useEffect(() => {
     if (!initialValues || !initialValues?.folder?.id) return;
     setItem(initialValues);

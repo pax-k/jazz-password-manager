@@ -68,16 +68,19 @@ const VaultPage: React.FC = () => {
     if (!editingItem) return;
     try {
       // TODO: apply diff to editedItem
-      for (const keyStr of Object.keys(editingItem)) {
-        const key = keyStr as keyof CoMapInit<PasswordItem>;
-        if (editingItem[key] !== updatedItem[key]) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (editingItem as any)[key] = updatedItem[key];
-        }
-      }
+      // for (const keyStr of Object.keys(editingItem)) {
+      //   const key = keyStr as keyof CoMapInit<PasswordItem>;
+      //   if (editingItem[key] !== updatedItem[key]) {
+      //     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      //     (editingItem as any)[key] = updatedItem[key];
+      //   }
+      // }
+      const res = editingItem.applyDiff(updatedItem);
+      console.log("res", res);
       setEditingItem(null);
     } catch (err) {
       setError("Failed to update item. Please try again.");
+      throw new Error(err);
     }
   };
 
