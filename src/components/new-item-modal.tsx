@@ -1,16 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
+import { useForm, SubmitHandler } from "react-hook-form";
 import BaseModal from "./base-modal";
 import Button from "./button";
-// import { PasswordItem } from "../types";
-import { Alert, AlertDescription } from "./alert";
+import { Alert } from "./alert";
 import { Folder, PasswordItem } from "../schema";
-import { CoMapInit } from "jazz-tools";
-import { ID } from "jazz-tools";
+import { CoMapInit,  } from "jazz-tools";
 
 interface NewItemModalProps {
   isOpen: boolean;
   onClose: () => void;
-  // editingItem, item
   initialValues?: CoMapInit<PasswordItem>;
   onSave: (item: CoMapInit<PasswordItem>) => void;
   folders: Folder[];
@@ -23,83 +21,35 @@ const NewItemModal: React.FC<NewItemModalProps> = ({
   onSave,
   folders,
 }) => {
-  const [item, setItem] = useState<Partial<CoMapInit<PasswordItem>>>(
-    initialValues || {
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<CoMapInit<PasswordItem>>({
+    defaultValues: initialValues || {
       name: "",
       username: "",
       password: "",
       uri: "",
       deleted: false,
-    }
-  );
+      folder: undefined,
+    },
+  });
 
   useEffect(() => {
-    if (!initialValues || !initialValues?.folder?.id) return;
-    setItem(initialValues);
-    setSelectedFolderId(initialValues?.folder?.id);
-  }, [initialValues, initialValues?.folder?.id]);
-
-  const [errors, setErrors] = useState<
-    Partial<Record<keyof PasswordItem, string>>
-  >({});
-
-  const [selectedFolderId, setSelectedFolderId] = useState(
-    initialValues?.folder?.id || undefined
-  );
-  console.log("selectedFolderId", selectedFolderId);
-  const selectedFolder = folders.find(
-    (folder) => folder.id === selectedFolderId
-  );
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setItem((prev) => ({ ...prev, [name]: value }));
-    setErrors((prev) => ({ ...prev, [name]: "" }));
-  };
-
-  const validateForm = (
-    item: Partial<CoMapInit<PasswordItem>>
-  ): item is CoMapInit<PasswordItem> => {
-    const newErrors: Partial<Record<keyof PasswordItem, string>> = {};
-
-    if (!item.name?.trim()) {
-      newErrors.name = "Name is required";
+    if (initialValues) {
+      Object.entries(initialValues).forEach(([key, value]) => {
+        setValue(key as keyof CoMapInit<PasswordItem>, value);
+      });
     }
-    if (!item.password?.trim()) {
-      newErrors.password = "Password is required";
-    } else if (item.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters long";
-    }
-    if (
-      item.uri &&
-      !item.uri.startsWith("http://") &&
-      !item.uri.startsWith("https://")
-    ) {
-      newErrors.uri = "URI must start with http:// or https://";
-    }
+  }, [initialValues, setValue]);
 
-    if (!item.folder) {
-      newErrors.folder = "Must select a folder";
-    }
-
-    setErrors(newErrors);
-    console.log("errors", newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // if (!selectedFolder) return;
-    // const itemToUse = editingItem ?? item;
-    // if (!editingItem) {
-    item.folder = selectedFolder;
-    // }
-    if (validateForm(item)) {
-      onSave(item);
-      onClose();
-    }
+  const onSubmit: SubmitHandler<CoMapInit<PasswordItem>> = (data) => {
+    const selectedFolder = folders.find((folder) => folder.id === data.folder);
+    data.folder = selectedFolder;
+    onSave(data);
+    onClose();
   };
 
   return (
@@ -108,7 +58,7 @@ const NewItemModal: React.FC<NewItemModalProps> = ({
       onClose={onClose}
       title={initialValues ? "Edit Password" : "Add New Password"}
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
           <label
             htmlFor="name"
@@ -118,16 +68,13 @@ const NewItemModal: React.FC<NewItemModalProps> = ({
           </label>
           <input
             type="text"
-            name="name"
+            {...register("name", { required: "Name is required" })}
             id="name"
-            required
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            value={item.name}
-            onChange={handleChange}
           />
           {errors.name && (
             <Alert variant="destructive">
-              <AlertDescription>{errors.name}</AlertDescription>
+              <AlertDescription>{errors.name.message}</AlertDescription>
             </Alert>
           )}
         </div>
@@ -140,11 +87,9 @@ const NewItemModal: React.FC<NewItemModalProps> = ({
           </label>
           <input
             type="text"
-            name="username"
+            {...register("username")}
             id="username"
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            value={item.username}
-            onChange={handleChange}
           />
         </div>
         <div>
@@ -156,16 +101,19 @@ const NewItemModal: React.FC<NewItemModalProps> = ({
           </label>
           <input
             type="password"
-            name="password"
+            {...register("password", {
+              required: "Password is required",
+              minLength: {
+                value: 8,
+                message: "Password must be at least 8 characters long",
+              },
+            })}
             id="password"
-            required
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            value={item.password}
-            onChange={handleChange}
           />
           {errors.password && (
             <Alert variant="destructive">
-              <AlertDescription>{errors.password}</AlertDescription>
+              <AlertDescription>{errors.password.message}</AlertDescription>
             </Alert>
           )}
         </div>
@@ -178,15 +126,19 @@ const NewItemModal: React.FC<NewItemModalProps> = ({
           </label>
           <input
             type="url"
-            name="uri"
+            {...register("uri", {
+              validate: (value) =>
+                !value ||
+                value.startsWith("http://") ||
+                value.startsWith("https://") ||
+                "URI must start with http:// or https://",
+            })}
             id="uri"
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            value={item.uri}
-            onChange={handleChange}
           />
           {errors.uri && (
             <Alert variant="destructive">
-              <AlertDescription>{errors.uri}</AlertDescription>
+              <AlertDescription>{errors.uri.message}</AlertDescription>
             </Alert>
           )}
         </div>
@@ -198,19 +150,22 @@ const NewItemModal: React.FC<NewItemModalProps> = ({
             Folder
           </label>
           <select
-            name="folder"
+            {...register("folder", { required: "Must select a folder" })}
             id="folder"
-            required
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            value={item.folder?.id}
-            onChange={(e) => setSelectedFolderId(e.target.value as ID<Folder>)}
           >
+            <option value="">Select a folder</option>
             {folders.map((folder) => (
               <option key={folder.id} value={folder.id}>
                 {folder.name}
               </option>
             ))}
           </select>
+          {errors.folder && (
+            <Alert variant="destructive">
+              <AlertDescription>{errors.folder.message}</AlertDescription>
+            </Alert>
+          )}
         </div>
         <div className="flex justify-end space-x-2">
           <Button type="button" variant="secondary" onClick={onClose}>
