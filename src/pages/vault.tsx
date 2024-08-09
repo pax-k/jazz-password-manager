@@ -173,9 +173,16 @@ const VaultPage: React.FC = () => {
       )}
       <div className="mb-4 flex flex-wrap justify-between items-center gap-4">
         <div className="flex flex-wrap gap-2">
+          <Button
+            key={"folder-all"}
+            onClick={() => setSelectedFolder(undefined)}
+            variant={!selectedFolder ? "primary" : "secondary"}
+          >
+            All
+          </Button>
           {folders?.map((folder) => (
             <Button
-              // key={folder}
+              key={folder.id}
               onClick={() => setSelectedFolder(folder?.name)}
               variant={
                 selectedFolder === folder?.name ? "primary" : "secondary"
@@ -202,7 +209,9 @@ const VaultPage: React.FC = () => {
         </div>
         <div className="flex gap-2">
           <Button onClick={() => setIsNewItemModalOpen(true)}>New Item</Button>
-          <Button onClick={() => setIsInviteModalOpen(true)}>Share</Button>
+          <Button onClick={() => setIsInviteModalOpen(true)}>
+            Share Folder
+          </Button>
         </div>
       </div>
       <div className="overflow-x-auto">

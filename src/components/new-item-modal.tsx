@@ -2,9 +2,9 @@ import React, { useEffect } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import BaseModal from "./base-modal";
 import Button from "./button";
-import { Alert } from "./alert";
+import { Alert, AlertDescription } from "./alert";
 import { Folder, PasswordItem } from "../schema";
-import { CoMapInit,  } from "jazz-tools";
+import { CoMap, CoMapInit } from "jazz-tools";
 
 interface NewItemModalProps {
   isOpen: boolean;
@@ -26,6 +26,7 @@ const NewItemModal: React.FC<NewItemModalProps> = ({
     handleSubmit,
     setValue,
     formState: { errors },
+    // @ts-expect-error error
   } = useForm<CoMapInit<PasswordItem>>({
     defaultValues: initialValues || {
       name: "",
@@ -40,14 +41,18 @@ const NewItemModal: React.FC<NewItemModalProps> = ({
   useEffect(() => {
     if (initialValues) {
       Object.entries(initialValues).forEach(([key, value]) => {
-        setValue(key as keyof CoMapInit<PasswordItem>, value);
+        const valueToSet = value instanceof CoMap ? value.id : value;
+        setValue(key as keyof CoMapInit<PasswordItem>, valueToSet);
       });
     }
   }, [initialValues, setValue]);
 
   const onSubmit: SubmitHandler<CoMapInit<PasswordItem>> = (data) => {
-    const selectedFolder = folders.find((folder) => folder.id === data.folder);
-    data.folder = selectedFolder;
+    const folderId = data?.folder as unknown as string;
+    const selectedFolder = folders.find((folder) => folder.id === folderId);
+    if (selectedFolder) {
+      data.folder = selectedFolder;
+    }
     onSave(data);
     onClose();
   };

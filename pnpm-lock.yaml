@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  react-hook-form@7.52.2:
+    hash: 3643j3vi6ogdxdoyx6z5lb3mva
+    path: patches/react-hook-form@7.52.2.patch
+
 importers:
 
   .:
@@ -22,7 +27,7 @@ importers:
         version: 18.3.1(react@18.3.1)
       react-hook-form:
         specifier: ^7.52.2
-        version: 7.52.2(react@18.3.1)
+        version: 7.52.2(patch_hash=3643j3vi6ogdxdoyx6z5lb3mva)(react@18.3.1)
       react-router-dom:
         specifier: ^6.26.0
         version: 6.26.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -61,7 +66,7 @@ importers:
         specifier: ^3.4.3
         version: 3.4.9
       typescript:
-        specifier: ^5.2.2
+        specifier: ^5.5.4
         version: 5.5.4
       vite:
         specifier: ^5.2.0
@@ -2638,7 +2643,7 @@ snapshots:
       react: 18.3.1
       scheduler: 0.23.2
 
-  react-hook-form@7.52.2(react@18.3.1):
+  react-hook-form@7.52.2(patch_hash=3643j3vi6ogdxdoyx6z5lb3mva)(react@18.3.1):
     dependencies:
       react: 18.3.1
 
